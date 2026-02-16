@@ -25,7 +25,7 @@ Use this skill when the user asks to "create a new feature", "add a module", or 
 
 3. **Template Generation:**
 
-   ### Types (`types/[feature-name].types.ts`)
+   ### Types (`types/[feature-name].type.ts`)
    Define the core interfaces for the domain.
 
    ### Service (`services/[feature-name].service.ts`)
