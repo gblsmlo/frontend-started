@@ -1,3 +1,7 @@
+---
+description: Feature Development Lifecycle
+---
+
 # Workflow: Feature Development Lifecycle
 
 This workflow guides the development of a new feature from conception to production-ready code.
