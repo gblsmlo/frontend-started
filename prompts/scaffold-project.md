@@ -190,19 +190,41 @@ EOF
 
 ## Phase 4: Git & Hooks Setup
 
-**Objective:** Initialize Git, Husky, and Commitlint.
+**Objective:** Initialize Git, Husky, lint-staged, and Commitlint.
 
 **Commands:**
 ```bash
 git init
-pnpm add -D husky @commitlint/cli @commitlint/config-conventional
+pnpm add -D husky lint-staged @commitlint/cli @commitlint/config-conventional
 pnpm exec husky init
-echo "pnpm biome check --write src && pnpm test:run" > .husky/pre-commit
-echo "npx --no -- commitlint --edit \$1" > .husky/commit-msg
-chmod +x .husky/pre-commit .husky/commit-msg
 ```
 
 **Configuration:**
+
+**4.1: Pre-commit Hook**
+```bash
+cat > .husky/pre-commit <<'EOF'
+pnpm lint-staged
+
+# Run lint-staged with error handling
+if ! pnpm lint-staged; then
+  echo "❌ Pre-commit checks failed. Please fix the issues above and try again."
+  echo "💡 You can run 'pnpm lint:staged' to fix issues automatically."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
+EOF
+chmod +x .husky/pre-commit
+```
+
+**4.2: Commit Message Hook**
+```bash
+echo "npx --no -- commitlint --edit \$1" > .husky/commit-msg
+chmod +x .husky/commit-msg
+```
+
+**4.3: Commitlint Configuration**
 ```bash
 cat > .commitlintrc.json <<'EOF'
 {
@@ -212,7 +234,7 @@ EOF
 ```
 
 **Verification Checkpoint:**
-- [ ] `.husky/pre-commit` hook exists and is executable
+- [ ] `.husky/pre-commit` hook exists and is executable with lint-staged error handling
 - [ ] `.husky/commit-msg` hook exists and is executable
 - [ ] `.commitlintrc.json` extends conventional config
 
@@ -301,7 +323,7 @@ sed -i "s|from '@/lib/utils'|from '@libs/utils'|g" src/components/ui/*.tsx 2>/de
 
 ## Phase 7: Package.json Scripts
 
-**Objective:** Ensure all required npm scripts are present.
+**Objective:** Ensure all required npm scripts and lint-staged configuration are present.
 
 **Commands:**
 ```bash
@@ -315,10 +337,21 @@ pkg.scripts = {
   'start': 'next start',
   'lint': 'biome check src',
   'lint:fix': 'biome check --apply src',
-  'format': 'biome format --write src',
+  'lint:format': 'biome format --write src',
+  'lint:staged': 'biome check src --staged --write',
   'test': 'vitest',
   'test:run': 'vitest run',
   'prepare': 'husky'
+};
+pkg['lint-staged'] = {
+  '*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}': [
+    'pnpm lint:staged --no-errors-on-unmatched'
+  ]
+};
+pkg.husky = {
+  hooks: {
+    'pre-commit': 'lint-staged'
+  }
 };
 fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 "
@@ -326,6 +359,8 @@ fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 
 **Verification Checkpoint:**
 - [ ] All 9 scripts are present in `package.json`
+- [ ] `lint-staged` configuration exists in `package.json`
+- [ ] `husky.hooks.pre-commit` is configured
 
 ---
 
@@ -656,7 +691,8 @@ pnpm build
 - [ ] All tests pass (0 failures)
 - [ ] Build succeeds with no errors
 - [ ] No data loss occurred during scaffolding
-- [ ] Git hooks are configured and executable
+- [ ] Git hooks are configured and executable with lint-staged
+- [ ] lint-staged is configured with error handling in pre-commit hook
 - [ ] Path aliases work in all contexts (TypeScript, Vitest, Next.js)
 - [ ] Services layer is properly structured and tested
 
@@ -667,10 +703,11 @@ pnpm build
 The scaffolding is complete when:
 1. All 9 phases are executed in order
 2. All verification checkpoints pass
-3. Final checklist shows 9/9 items checked
+3. Final checklist shows 10/10 items checked
 4. No errors in any validation command
 5. Existing documentation and agent configs are preserved
 6. Services layer is implemented and follows FBA standards
+7. lint-staged is configured with proper error handling
 
 ---
 
