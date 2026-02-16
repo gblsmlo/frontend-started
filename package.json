@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "biome check src",
     "lint:fix": "biome check --apply src",
-    "format": "biome format --write src",
+    "lint:format": "biome format --write src",
+    "lint:staged": "biome check src --staged --write",
     "test": "vitest",
     "test:run": "vitest run",
     "prepare": "husky"
@@ -38,11 +39,22 @@
     "babel-plugin-react-compiler": "1.0.0",
     "happy-dom": "^20.6.1",
     "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "jsdom": "^28.1.0",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5",
     "vitest": "^4.0.18"
+  },
+  "lint-staged": {
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+      "pnpm lint:staged --no-errors-on-unmatched"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
